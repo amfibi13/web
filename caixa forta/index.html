@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestor de Textos</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    input, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 16px;
+    }
+    #resultados .item {
+      background: #f0f0f0;
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #resultados .item span {
+      cursor: pointer;
+      flex-grow: 1;
+    }
+    .btn-eliminar {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-left: 10px;
+      border-radius: 4px;
+    }
+    #resultadoTexto {
+      white-space: pre-wrap;
+      background: #e9ffe9;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>📚 Gestor de Textos</h1>
+
+  <h2>Agregar nuevo texto</h2>
+  <input type="text" id="titulo" placeholder="Título del texto">
+  <textarea id="contenido" rows="5" placeholder="Contenido del texto"></textarea>
+  <button onclick="guardarTexto()">Guardar Texto</button>
+
+  <h2>🔎 Buscar texto</h2>
+  <input type="text" id="busqueda" placeholder="Buscar por título..." oninput="buscarTextos()">
+
+  <div id="resultados"></div>
+
+  <div id="resultadoTexto"></div>
+
+  <script>
+    function guardarTexto() {
+      const titulo = document.getElementById("titulo").value.trim();
+      const contenido = document.getElementById("contenido").value.trim();
+
+      if (!titulo || !contenido) {
+        alert("Por favor, completa todos los campos.");
+        return;
+      }
+
+      let textos = JSON.parse(localStorage.getItem("textos") || "{}");
+
+      textos[titulo] = contenido;
+      localStorage.setItem("textos", JSON.stringify(textos));
+
+      document.getElementById("titulo").value = "";
+      document.getElementById("contenido").value = "";
+
+      alert("✅ Texto guardado.");
+      buscarTextos();
+    }
+
+    function buscarTextos() {
+      const consulta = document.getElementById("busqueda").value.toLowerCase();
+      const resultadosDiv = document.getElementById("resultados");
+      const textos = JSON.parse(localStorage.getItem("textos") || "{}");
+
+      resultadosDiv.innerHTML = "";
+
+      Object.keys(textos).forEach(titulo => {
+        if (titulo.toLowerCase().includes(consulta)) {
+          const item = document.createElement("div");
+          item.className = "item";
+
+          const span = document.createElement("span");
+          span.textContent = titulo;
+          span.onclick = () => mostrarTexto(titulo);
+
+          const btnEliminar = document.createElement("button");
+          btnEliminar.textContent = "Eliminar";
+          btnEliminar.className = "btn-eliminar";
+          btnEliminar.onclick = () => eliminarTexto(titulo);
+
+          item.appendChild(span);
+          item.appendChild(btnEliminar);
+          resultadosDiv.appendChild(item);
+        }
+      });
+    }
+
+    function mostrarTexto(titulo) {
+      const textos = JSON.parse(localStorage.getItem("textos") || "{}");
+      const contenido = textos[titulo];
+      document.getElementById("resultadoTexto").innerHTML = `<h3>${titulo}</h3><p>${contenido}</p>`;
+    }
+
+    function eliminarTexto(titulo) {
+      if (confirm(`¿Eliminar el texto "${titulo}"?`)) {
+        let textos = JSON.parse(localStorage.getItem("textos") || "{}");
+        delete textos[titulo];
+        localStorage.setItem("textos", JSON.stringify(textos));
+        document.getElementById("resultadoTexto").innerHTML = "";
+        buscarTextos();
+      }
+    }
+
+    window.onload = buscarTextos;
+  </script>
+</body>
+</html>
